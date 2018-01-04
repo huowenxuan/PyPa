@@ -3,10 +3,11 @@ import re
 import http
 from pybloom_live import BloomFilter
 
+
 def do_request(url, data={}):
-    proxy_used  = ['116.199.2.209:80', '110.73.32.7:6666',
-                   '222.76.174.102:8118', '61.155.164.109:3128',
-                   '122.72.18.35:80']
+    proxy_used = ['116.199.2.209:80', '110.73.32.7:6666',
+                  '222.76.174.102:8118', '61.155.164.109:3128',
+                  '122.72.18.35:80']
     proxy_ok = ['183.166.66.92:808']
     proxy_what = ['58.220.95.107:8080']
     proxy = {'http': proxy_ok[0]}
@@ -24,19 +25,25 @@ def do_request(url, data={}):
     return response.read()
 
     # request_headers = {
+    #     'host': 'www.mafengwo.cn',
+    #     'connection': 'keep-alive',
+    #     'cache-control': 'no-cache',
+    #     'upgrade-insecure-requests': '1',
     #     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36 QQBrowser/4.2.4976.400',
     #     'Accept': 'text/html, */*; q=0.01',
-    #     'Accept-Language': 'zh-CN,zh;q=0.8'
+    #     'Accept-Language': 'zh-CN,zh;q=0.8',
     # }
     # req = request.Request(url, headers=request_headers)
     # response = request.urlopen(req)
     # return response.read()
+
 
 city_home_pages = []
 city_ids = []
 # dirname = 'mafengwo_notes/'
 dirname = 'hainan/'
 download_bf = BloomFilter(1024 * 1024 * 16, 0.01)
+
 
 def download_city_notes(id):
     for i in range(1, 999):
@@ -93,4 +100,3 @@ except http.client.BadStatusLine:
     print('BadStatusLine')
 except Exception as Arguments:
     print(Arguments)
-
