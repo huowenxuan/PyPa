@@ -7,7 +7,8 @@ from urllib import request, parse
 
 def hehe(n, p):
     url = 'http://rtqt.nbwsg.cn/mail/save.asp'
-    proxy_ok = ['116.199.2.209:80']
+    proxy_used  = ['116.199.2.209:80']
+    proxy_ok = ['110.73.32.7:6666']
     proxy_what = ['222.76.174.102:8118']
 
     proxy = {'http': proxy_ok[0]}
