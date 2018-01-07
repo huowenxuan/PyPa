@@ -3,14 +3,9 @@ import re
 import http
 from pybloom_live import BloomFilter
 
-
 def do_request(url, data={}):
-    proxy_used = ['116.199.2.209:80', '110.73.32.7:6666',
-                  '222.76.174.102:8118', '61.155.164.109:3128',
-                  '122.72.18.35:80']
-    proxy_ok = ['183.166.66.92:808']
-    proxy_what = ['58.220.95.107:8080']
-    proxy = {'http': proxy_ok[0]}
+    # 使用代理IP
+    proxy = {'http': '183.166.66.92:808'}
 
     proxy_support = request.ProxyHandler(proxy)
     opener = request.build_opener(proxy_support)
@@ -24,6 +19,7 @@ def do_request(url, data={}):
     response = request.urlopen(url, parse.urlencode(data).encode('utf-8'))
     return response.read()
 
+    # 不使用代理IP
     # request_headers = {
     #     'host': 'www.mafengwo.cn',
     #     'connection': 'keep-alive',
@@ -40,8 +36,7 @@ def do_request(url, data={}):
 
 city_home_pages = []
 city_ids = []
-# dirname = 'mafengwo_notes/'
-dirname = 'hainan/'
+dirname = 'mafengwo_notes/'
 download_bf = BloomFilter(1024 * 1024 * 16, 0.01)
 
 
@@ -82,17 +77,16 @@ def download_city_notes(id):
 
 
 try:
-    # # 下载目的地首页
-    # htmlcontent = do_request('http://www.mafengwo.cn/mdd/').decode('utf-8')
-    #
-    # # 找出所有城市主页，后五位数字为城市编号
-    # city_home_pages = re.findall('/travel-scenic-spot/mafengwo/\d{5}.html', htmlcontent)
-    #
-    # for city in city_home_pages:
-    #     # city_ids.append(city[29:34])
-    #     download_city_notes(city[29:34])
+    # 下载目的地首页
+    htmlcontent = do_request('http://www.mafengwo.cn/mdd/').decode('utf-8')
 
-    download_city_notes('12938')
+    # 找出所有城市主页，后五位数字为城市编号
+    city_home_pages = re.findall('/travel-scenic-spot/mafengwo/\d{5}.html', htmlcontent)
+
+    for city in city_home_pages:
+        # city_ids.append(city[29:34])
+        download_city_notes(city[29:34])
+
 
 except error.HTTPError as Arguments:
     print(Arguments)
