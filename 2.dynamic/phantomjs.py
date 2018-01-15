@@ -18,9 +18,9 @@ driver.quit()
 driver2 = webdriver.PhantomJS(service_args=['--config=/path/to/config.json'])
 
 # config.json:
-{
-    /* Same as: --ignore-ssl-errors=true */
-    "ignoreSslErrors": true,
-    "maxDiskCacheSize": 1000,
-    "outputEncoding": "utf8"
-}
+# {
+#     /* Same as: --ignore-ssl-errors=true */
+#     "ignoreSslErrors": true,
+#     "maxDiskCacheSize": 1000,
+#     "outputEncoding": "utf8"
+# }

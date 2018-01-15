@@ -25,7 +25,6 @@ project.xcworkspace
 # Android/IntelliJ
 #
 build/
-.idea
 .gradle
 local.properties
 *.iml
@@ -55,5 +54,6 @@ fastlane/screenshots
 ios/Pods/
 
 .vscode/
+.idea
 
 venv/
