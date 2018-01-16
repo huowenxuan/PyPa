@@ -80,7 +80,7 @@ try:
     # 下载目的地首页
     htmlcontent = do_request('http://www.mafengwo.cn/mdd/').decode('utf-8')
 
-    # 找出所有城市主页，后五位数字为城市编号
+    # 找出所有城市主页，后五位数字为城市编号d
     city_home_pages = re.findall('/travel-scenic-spot/mafengwo/\d{5}.html', htmlcontent)
 
     for city in city_home_pages:
