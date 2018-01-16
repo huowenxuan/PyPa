@@ -55,5 +55,6 @@ ios/Pods/
 
 .vscode/
 .idea
+.ipynb_checkpoints/
 
 venv/
