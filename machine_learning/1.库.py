@@ -7,12 +7,12 @@ import numpy as np
 # %matplotlib inline # jupyter命令，设置图表在记事本中可见
 import seaborn as sns
 
-# 1. 获取
+# 1. 获取：获取数据
 def run1():
     r = requests.get(r'https://api.github.com/users/huowenxuan/starred')
     print(r.json())
 
-# 2. 检查
+# 2. 检查：检查数据
 # 2.1 IPython jupyter 基于Web的交互性Python运行环境，类似命令行实时输出显示结果
 # pip3 install ipython
 # pip3 install jupyter
@@ -125,6 +125,7 @@ def run6():
     fig, ax = plt.subplots(figsize=(6, 6))
     bar_width = .8
     labels = [x for x in df.columns if '宽度' in x or '长度' in x]
+    # mean平均值
     ver_y = [df[df['类别'] == 'Iris-versicolor'][x].mean() for x in labels]
     vir_y = [df[df['类别'] == 'Iris-virginica'][x].mean() for x in labels]
     set_y = [df[df['类别'] == 'Iris-setosa'][x].mean() for x in labels]
@@ -142,20 +143,76 @@ def run6():
     # 添加图例描述每个序列
     ax.legend(['virginica', 'setosa', 'versicolor'])
 
-# 2.4 Seaborn 可视化 专门为统计可视化而创建的库。可以和Pandas完美协作。列是特征，行是观测的样例，这种数据框风格称为整洁的数据，是机器学习应用中最常见的形式
+# 2.4 Seaborn 可视化，为统计的可视化而生。可以和Pandas完美协作。基于matplotlib
+# 列是特征，行是观测的样例，这种数据框风格称为整洁的数据，是机器学习应用中最常见的形式
 
 # 画出所有的特征
 def run7():
     df = get_iris()
     sns.pairplot(df, hue='类别')
 
-# 3 准备
-# 4 建模和评估
+# sns和plt结合绘制小提琴图（显示特征的分布情况）
+def run8():
+    df = get_iris()
+    fig, ax = plt.subplots(2, 2, figsize=(7, 7))
+    sns.set(style='white', palette='muted')
+    # sns 小提琴图
+    sns.violinplot(x=df['类别'], y=df['花萼宽度'], ax=ax[0, 0])
+    sns.violinplot(x=df['类别'], y=df['花萼长度'], ax=ax[0, 1])
+    sns.violinplot(x=df['类别'], y=df['花瓣宽度'], ax=ax[1, 0])
+    sns.violinplot(x=df['类别'], y=df['花瓣长度'], ax=ax[1, 1])
+    # 总标题
+    fig.suptitle('Violin Plots', fontsize=16, y=1.03)
+    # 遍历每个子图的轴
+    for i in ax.flat:
+        # setp设置属性
+        plt.setp(i.get_xticklabels(), rotation=-90)
+    fig.tight_layout()
+
+# 3 准备：使用Pandas处理（整理）和操作数据
+# map，类似数组的map，传入字典或者表达式，操作一列
+def run9map():
+    df = get_iris()
+    # 如果列存在就修改每一行
+    df['类别'] = df['类别'].map({'Iris-setosa': 'SET', 'Iris-versicolor': 'VER', 'Iris-virginica': 'VIR'})
+    # 如果列不存在就创建这个列并给每行赋值
+    df['短类别'] = df['类别'].map({'SET': 'S', 'VER': 'V', 'VIR': 'V'})
+    df['备注'] = '这是一条备注'
+    # 大于1.3为true，否则为false
+    df['宽花瓣'] = df['花瓣宽度'].map(lambda v: '是' if v >= 1.3 else '否') # lambda:使用表达式创建匿名函数
+
+# apply，传入表达式，调用行或列的数据操作一列
+def run10apply():
+    df = get_iris()
+    # 大于1.3为true，否则为false
+    df['宽花瓣'] = df['花瓣宽度'].apply(lambda v: '是' if v >= 1.3 else '否')
+    # 在整个数据框上使用apply，调用行的数据来修改列; axis=1为对行进行操作，axis=0为对列进行操作
+    df['花瓣面积'] = df.apply(lambda r: r['花瓣宽度'] * r['花瓣长度'], axis=1)
+
+# applymap，操作所有数据单元
+def run11applymap():
+    df = get_iris()
+    # 对所有的数据单元都执行一遍函数。在所有的float类型后面加√
+    df = df.applymap(lambda v: str(v) + '√' if isinstance(v, float) else v)
+
+# groupby
+def run12groupby():
+    df = get_iris()
+    # 为类别分类，并求出均值
+    df.groupby('类别').mean()
+    # 获取每个类别完全的描述性统计信息
+    df.groupby('类别').describe()
+    # 通过和每一个唯一类相关联的花瓣宽度???，对类别进行分组
+    df.groupby('花瓣宽度')['类别'].unique().to_frame()
+    # 将每个类别的最大最小值、间距组成一个数据框。agg返回一个将字典键值作为列名的数据框
+    df.groupby('类别')['花瓣宽度'].agg({'间距': lambda x: x.max() - x.min(), '最大': np.max, '最小': np.min})
+
+# 4. 建模和评估
+
 
 def get_iris():
     return pd.read_csv(
         '/Users/huowenxuan/Desktop/py/machine_learning/outputs/iris/iris.data',
-        names=['花萼长度', '花萼宽度', '花瓣长度', '花瓣宽度', '类别']
-    )
+        names=['花萼长度', '花萼宽度', '花瓣长度', '花瓣宽度', '类别'])
 
-run7()
+run12groupby()
