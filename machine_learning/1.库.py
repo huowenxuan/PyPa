@@ -6,6 +6,8 @@ plt.style.use('ggplot')
 import numpy as np
 # %matplotlib inline # jupyter命令，设置图表在记事本中可见
 import seaborn as sns
+import statsmodels.api as sm
+
 
 # 1. 获取：获取数据
 def run1():
@@ -208,11 +210,39 @@ def run12groupby():
     df.groupby('类别')['花瓣宽度'].agg({'间距': lambda x: x.max() - x.min(), '最大': np.max, '最小': np.min})
 
 # 4. 建模和评估
+# 4.1 statsmodels: 探索数据、评估模型，运行统计检查
+# 构建线性回归模型，为花萼宽度和花萼长度之间的关系建模
+def run13smOLS():
+    df = get_iris()
+    # 1. 先通过散点图来目测两者的关系
+    fig, ax = plt.subplots(figsize=(7, 7))
+    ax.scatter(df['花萼宽度'][:50], df['花萼长度'][:50])
+    ax.set_ylabel('Length')
+    ax.set_xlabel('Width')
+    ax.set_title('Setosa width vs. length', fontsize=14, y=1.02)
+    # 2. 似乎有一个正向的线性关系，使用sm在这个数据集上运行一个线性回归模型，预估这种关系的强度
+    y = df['花萼长度'][:50]
+    x = df['花萼宽度'][:50]
+    x2 = sm.add_constant(x)
+    # OLS 线性回归 普通最小二乘法
+    results = sm.OLS(y, x2).fit()
+    # 输出模型
+    print(results.summary())
+    # 3. 绘制回归线
+    fig, ax = plt.subplots(figsize=(7, 7))
+    # fittedvalues 获取从模型所得的回归线
+    ax.plot(x, results.fittedvalues, label='regression line')
+    ax.scatter(x, y, label='data point', color='b')
+    ax.set_ylabel('花萼长度')
+    ax.set_xlabel('花萼宽度')
+    ax.set_title('Setosa width vs. length', fontsize=14, y=1.02)
+    ax.legend(loc=2)
 
+# 4.2 scikit-learn(sklearn)：文档好，接口统一。分类、回归、聚类、降维、模型选择、预处理
+def run14():
+    pass
 
 def get_iris():
-    return pd.read_csv(
-        '/Users/huowenxuan/Desktop/py/machine_learning/outputs/iris/iris.data',
-        names=['花萼长度', '花萼宽度', '花瓣长度', '花瓣宽度', '类别'])
+    return pd.read_csv('/Users/huowenxuan/Desktop/py/machine_learning/outputs/iris/iris.data', names=['花萼长度', '花萼宽度', '花瓣长度', '花瓣宽度', '类别'])
 
-run12groupby()
+run14()
