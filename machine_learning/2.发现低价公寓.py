@@ -2,7 +2,9 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
 plt.style.use('ggplot')
+import folium
 
 pd.set_option("display.max_columns", 30)
 pd.set_option("display.max_colwidth", 100)
@@ -11,7 +13,8 @@ pd.set_option("display.precision", 3)
 '''
 1. =========获取数据=========
 '''
-CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/magic.csv'
+CSV_PATH = r'C:/Users/msi/Desktop/py/machine_learning/source_data/magic.csv'
+# CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/magic.csv'
 '''
 2. =========准备数据（格式化）=========
 '''
@@ -29,20 +32,21 @@ df.head().T
 mu = df[df['listingtype_value'].str.contains('Apartments For')]
 # single units
 su = df[df['listingtype_value'].str.contains('Apartment For')]
-len(mu) # 161
-len(su) # 339
+len(mu)  # 161
+len(su)  # 339
 
 # 卧室和浴室的数量和平方英尺需要解析，都在一列
 su['propertyinfo_value']
 # 检查没有包含'bd'或'Studio'的行数
-len(su[~(su['propertyinfo_value'].str.contains('Studio') | su['propertyinfo_value'].str.contains('bd'))]) # 0
+len(su[~(su['propertyinfo_value'].str.contains('Studio') | su['propertyinfo_value'].str.contains('bd'))])  # 0
 # 检查没有包含'ba'的行数
-len(su[~(su['propertyinfo_value'].str.contains('ba'))]) # 6
+len(su[~(su['propertyinfo_value'].str.contains('ba'))])  # 6
 
 # 选择拥有浴室的房源
 no_baths = su[~(su['propertyinfo_value'].str.contains('ba'))]
 # 排除缺失浴室信息的房源
 sucln = su[~su.index.isin(no_baths.index)]
+
 
 # 把类似'Studio • 1 ba • 550 sqft'的数据组合成数据框，不存在的数据用nan填充
 def parse_info(row):
@@ -53,12 +57,14 @@ def parse_info(row):
         br, ba, sqft = row.split('•')[:3]
     return pd.Series({'Beds': br, 'Baths': ba, 'Sqft': sqft})
 
+
 # apply返回一个数据框，使每个公寓属性(propertyinfo_value)都成为单独的列，
 attr = sucln['propertyinfo_value'].apply(parse_info)
 # 去掉字符串(bd、ba、sqft)
 attr_cln = attr.applymap(lambda x: x.strip().split(' ')[0] if isinstance(x, str) else np.nan)
 # 合并原数据和属性数据
 sujnd = sucln.join(attr_cln)
+
 
 # 提取楼层信息：楼层数字后跟随一个字母
 def parse_addy(r):
@@ -73,6 +79,7 @@ def parse_addy(r):
     else:
         flr = np.nan
     return pd.Series({'Zip': zipc, 'Floor': flr})
+
 
 flrzip = sujnd['routable_link/_text'].apply(parse_addy)
 suf = sujnd.join(flrzip)
@@ -90,3 +97,44 @@ sudf.reset_index(drop=True, inplace=True)
 '''
 # 输出统计数据
 sudf.describe()
+# 需要把所有的数据转换为数值才能进行统计，把Studio替换为0
+sudf.loc[:, 'Beds'] = sudf['Beds'].map(lambda x: 0 if 'Studio' in x else x)
+# 输出每一列的数值类型，发现不都是数字
+sudf.info()
+# 调整数据类型
+sudf.loc[:, 'Rent'] = sudf['Rent'].astype(int)
+sudf.loc[:, 'Beds'] = sudf['Beds'].astype(int)
+# 存在半间浴室，调整为float
+sudf.loc[:, 'Baths'] = sudf['Baths'].astype(float)
+# 存在NaN，需要float，但是要先将逗号替换掉
+sudf.loc[:, 'Sqft'] = sudf['Sqft'].str.replace(',', '')
+sudf.loc[:, 'Sqft'] = sudf['Sqft'].astype('float')
+sudf.loc[:, 'Floor'] = sudf['Floor'].astype('float')
+sudf.info()
+sudf.describe()
+# 发现318的楼层数大于1000，放弃这个房源
+sudf = sudf.drop([318])
+sudf.describe()
+# 按照编码查看平均价格
+sudf.pivot_table('Rent', 'Zip', 'Beds', aggfunc='mean')
+# 根据房源数量进行透视
+sudf.pivot_table('Rent', 'Zip', 'Beds', aggfunc='count')
+
+# 可视化数据
+# 目前的数据是基于邮政编码的，所以最好的可视化方法是使用热图
+# 缺少包含两道三件卧室的公寓，缩减数据集
+su_lt_two = sudf[sudf['Beds'] < 2]
+map = folium.Map(location=[40.748817, -73.985428], zoom_start=3)
+
+# 查看http://python-visualization.github.io/folium/docs-v0.5.0/quickstart.html#Getting-Started
+map.choropleth(
+    geo_data='./source_data/us-states.json',
+    columns=['Zip', 'Rent'],
+    key_on='feature.properties.postalCode',
+    # threshold_scale=[1700.00, 1900.00, 2100.00, 2300.00, 2500.00],
+    fill_color='YlGn',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Rent (%)',
+)
+map.save('nyc.html')
