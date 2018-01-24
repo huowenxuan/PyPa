@@ -2,6 +2,8 @@ import re
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import statsmodels.api as sm
+import patsy
 
 plt.style.use('ggplot')
 import folium
@@ -127,14 +129,24 @@ su_lt_two = sudf[sudf['Beds'] < 2]
 map = folium.Map(location=[40.748817, -73.985428], zoom_start=3)
 
 # 查看http://python-visualization.github.io/folium/docs-v0.5.0/quickstart.html#Getting-Started
-map.choropleth(
-    geo_data='./source_data/us-states.json',
-    columns=['Zip', 'Rent'],
-    key_on='feature.properties.postalCode',
-    # threshold_scale=[1700.00, 1900.00, 2100.00, 2300.00, 2500.00],
-    fill_color='YlGn',
-    fill_opacity=0.7,
-    line_opacity=0.2,
-    legend_name='Rent (%)',
-)
-map.save('nyc.html')
+# map.choropleth(
+#     geo_data='./source_data/us-states.json',
+#     columns=['Zip', 'Rent'],
+#     key_on='feature.properties.postalCode',
+#     # threshold_scale=[1700.00, 1900.00, 2100.00, 2300.00, 2500.00],
+#     fill_color='YlGn',
+#     fill_opacity=0.7,
+#     line_opacity=0.2,
+#     legend_name='Rent (%)',
+# )
+# map.save('nyc.html')
+
+# 建模
+# ~左边的Rent表示反应或因变量，右边的Zip和Beds表示独立或预测变量。表示想知道Zip和Beds如何影响Rent
+f = 'Rent ~ Zip + Beds'
+# 使用公式和数据框，得到一个数据框，X矩阵由预测变量组成，y向量由响应变量组成
+y, X = patsy.dmatrices(f, su_lt_two, return_type='dataframe')
+# .fit运行模型
+results = sm.OLS(y, X).fit()
+# 输出模型结果
+print(results.summary())
