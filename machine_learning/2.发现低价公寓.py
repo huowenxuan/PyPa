@@ -149,4 +149,10 @@ y, X = patsy.dmatrices(f, su_lt_two, return_type='dataframe')
 # .fit运行模型
 results = sm.OLS(y, X).fit()
 # 输出模型结果
-print(results.summary())
+# Adj R2为0.283，F值为1.21e-10，具有统计的显著性：仅仅用我是数量和邮政编码，就能够结实越三分之一的价格差异。
+# 中间部分是模型中每个自变量的有关信息。从左到右为变量、变量在模型中的系数、标准误差、t统计量、t统计量的p值、95%得置信区间
+results.summary()
+
+# 预测
+s = X.head()
+print(s)
