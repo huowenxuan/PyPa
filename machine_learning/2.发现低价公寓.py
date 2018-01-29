@@ -15,8 +15,8 @@ pd.set_option("display.precision", 3)
 '''
 1. =========获取数据=========
 '''
-# CSV_PATH = r'C:/Users/msi/Desktop/py/machine_learning/source_data/magic.csv'
-CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/magic.csv'
+# CSV_PATH = r'C:/Users/msi/Desktop/py/machine_learning/source_data/2.zillow.csv'
+CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/2.zillow.csv'
 '''
 2. =========准备数据（格式化）=========
 '''
