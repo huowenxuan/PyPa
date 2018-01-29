@@ -15,8 +15,8 @@ pd.set_option("display.precision", 3)
 '''
 1. =========获取数据=========
 '''
-CSV_PATH = r'C:/Users/msi/Desktop/py/machine_learning/source_data/magic.csv'
-# CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/magic.csv'
+# CSV_PATH = r'C:/Users/msi/Desktop/py/machine_learning/source_data/magic.csv'
+CSV_PATH = r'/Users/huowenxuan/Desktop/py/machine_learning/source_data/magic.csv'
 '''
 2. =========准备数据（格式化）=========
 '''
@@ -154,5 +154,24 @@ results = sm.OLS(y, X).fit()
 results.summary()
 
 # 预测
-s = X.head()
-print(s)
+# 查看模型的输入
+X.head()
+# 创建自己的输入行进行预测。使用X矩阵的索引，并用零填充数据
+to_pred_idx = X.iloc[0].index
+to_pred_zeros = np.zeros(len(to_pred_idx))
+tpdf = pd.DataFrame(to_pred_zeros, index=to_pred_idx, columns=['value'])
+# 填入实际的值。对10009区域、包含一间卧室的公寓进行评估
+# 对于线性回归，截距值必须设置为1，模型才能返回正确的统计值
+tpdf.loc['Intercept'] = 1
+tpdf.loc['Beds'] = 1
+tpdf.loc['Zip[T.10009]'] = 1
+# print(tpdf)
+# 这时截距和10009邮编、卧室数量已设置为1了。已经将特征设置为了适当的值
+# 运行预测，使用该模型返回一个预测：使用自己的输入值调用模型的predict方法，返回预测的值
+results.predict(tpdf['value'])
+# 改为两间卧室
+tpdf['value'] = 0
+tpdf.loc['Intercept'] = 1
+tpdf.loc['Beds'] = 2
+tpdf.loc['Zip[T.10009]'] = 1
+results.predict(tpdf['value'])
